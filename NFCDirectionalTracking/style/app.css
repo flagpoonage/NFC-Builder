@@ -1,0 +1,234 @@
+﻿/* http://meyerweb.com/eric/tools/css/reset/ 
+   v2.0 | 20110126
+   License: none (public domain)
+*/
+
+html, body, div, span, applet, object, iframe,
+h1, h2, h3, h4, h5, h6, p, blockquote, pre,
+a, abbr, acronym, address, big, cite, code,
+del, dfn, em, img, ins, kbd, q, s, samp,
+small, strike, strong, sub, sup, tt, var,
+b, u, i, center,
+dl, dt, dd, ol, ul, li,
+fieldset, form, label, legend,
+table, caption, tbody, tfoot, thead, tr, th, td,
+article, aside, canvas, details, embed,
+figure, figcaption, footer, header, hgroup,
+menu, nav, output, ruby, section, summary,
+time, mark, audio, video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+/* HTML5 display-role reset for older browsers */
+article, aside, details, figcaption, figure,
+footer, header, hgroup, menu, nav, section {
+    display: block;
+}
+
+body {
+    line-height: 1;
+    background-color: #333;
+}
+
+ol, ul {
+    list-style: none;
+}
+
+blockquote, q {
+    quotes: none;
+}
+
+    blockquote:before, blockquote:after,
+    q:before, q:after {
+        content: '';
+        content: none;
+    }
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+div#left {
+    position: fixed;
+    width: 400px;
+    height: 100%;
+    background-color: #62E87B;
+    box-shadow: 5px 0 10px #333;
+    border-right: solid 1px #222;
+}
+
+div#left-content {
+    padding: 50px;
+}
+
+div#phone {
+    height: 480px;
+    padding: 25px 10px 45px 10px;
+    background-color: #333;
+    border-radius: 15px;
+    box-shadow: 0 0 10px 0 #26592F;
+}
+
+div#phone-screen {
+    background-color: white;
+    height: 100%;
+    cursor: pointer;
+    position: absolute;
+    width: 280px;
+    height: 480px;
+}
+
+div#layout {
+    margin-left: 400px;
+    padding: 50px;
+    color: white;
+}
+
+div#shop-floor {
+    width:  800px;
+    height: 500px;
+    position: relative;
+    border-radius:  10px;
+    background-color:  #555;
+    margin: auto;
+}
+.round-rack {
+    width: 100px;
+    height: 100px;
+    border-radius: 100px;
+    border: solid 3px #AAA;
+    position: absolute;
+}
+div#rackid-1 {
+    top: 255px;  
+    left: 517px;
+}
+div#rackid-2 {
+    top: 255px;  
+    left: 328px;
+}
+div#rackid-3 {
+    top: 255px;  
+    left: 138px;
+}
+div#rackid-4 {
+    top: 120px;  
+    left: 420px;
+}
+div#rackid-5 {
+    top: 120px;  
+    left: 231px;
+}
+div#rackid-6 {
+    top: 120px;  left: 50px;
+}
+div#shop-counter {
+    width: 80px;
+    height: 200px;
+    border: solid 3px #AAA;
+    border-radius: 10px;
+    position: absolute;
+    right: 50px;
+    top:  150px;
+}
+div#wallrack-1 {
+    left:  50px;
+    top: 0;
+}
+.wall-rack {
+    width: 330px;
+    height: 50px;
+    position:  absolute;
+    border: solid 3px #AAA;
+    border-radius: 10px;
+}
+div#wallrack-2 {
+    left: 420px;
+    top: 0;
+}
+div#wallrack-3 {
+    bottom: 0;
+    left:  50px;
+}
+div#wallrack-4 {
+    bottom: 0;
+    left:  420px;
+}
+.wall-rack-segment {
+    height: 50px;
+    width:  110px;
+    position:  absolute;
+}
+.seg-left {
+    left: 0;
+}
+.seg-middle {
+    left: 110px;
+}
+.seg-right {
+    right: 0;
+}
+
+
+.screen-page {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width:  100%;
+    height: 100%;
+    font-family:  Arial,Helvetica, sans-serif;
+    color:  #333;
+    overflow: auto;
+}
+span.title {
+    display: block;
+    font-size:  20px;
+    text-align: center;
+    position: absolute;
+    width:  100%;
+    top: 80px;
+}
+input#product-search-input {
+    position: absolute;  
+    width: 220px;  
+    left: 30px;  border: none;  top: 117px;  height: 30px;  font-size: 18px;  text-align: center;
+    margin: 0;
+    padding: 0;
+    padding: 6px 0;
+    border: solid 1px #CCC;
+    border-radius: 10px;
+}
+button#product-search-button {
+    width:  200px;
+    position: absolute;
+    padding: 6px 0px;
+    top:  180px;
+    left: 40px;
+    background-color: #050;
+    color:  white;
+    font-size: 15px;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-weight: bold;
+    border: none;
+    border-radius:  10px;
+    cursor:  pointer;
+}
+
+div.product-matrix-listing{
+    padding: 5px;
+}
+div.product-matrix-listing:hover{
+    background-color: #62E87B;
+}
+
+div.product-matrix-listing span{
+    display: block;
+    line-height: 14px;
+    font-size: 12px;
+}

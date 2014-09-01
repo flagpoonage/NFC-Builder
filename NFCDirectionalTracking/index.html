@@ -1,0 +1,74 @@
+﻿<!DOCTYPE html>
+
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>NFC Directional Tracking</title>
+    <link rel="stylesheet" href="style/app.css" type="text/css" />
+    <script src="script/dist/underscore-min.js"></script>
+    <script src="script/dist/jquery.min.js"></script>
+    <script src="script/dist/backbone.js"></script>
+</head>
+<body>
+    <div id="left">
+        <div id="left-content">
+            <div id="phone">
+                <div id="phone-screen">
+                    <div id="product-search" class="screen-page">
+                        <span class="title" id="product-search-title">
+                            Product Lookup
+                        </span>
+                        <input type="text" id="product-search-input">
+                        <button type="button" id="product-search-button">Find Product</button>
+                    </div>
+                    <div id="product-matrix-page" class="screen-page" style="display:none">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="layout">
+        <div id="shop-floor">
+            <div id="shop-counter"></div>
+            <div class="round-rack" id="rackid-1" data-rackid="1">
+            </div>
+            <div class="round-rack" id="rackid-2" data-rackid="2">
+            </div>
+            <div class="round-rack" id="rackid-3" data-rackid="3">
+            </div>
+            <div class="round-rack" id="rackid-4" data-rackid="4">
+            </div>
+            <div class="round-rack" id="rackid-5" data-rackid="5">
+            </div>
+            <div class="round-rack" id="rackid-6" data-rackid="6">
+            </div>
+            <div class="wall-rack" id="wallrack-1">
+                <div class="wall-rack-segment seg-left" id="rackid-7" data-rackid="7"></div>
+                <div class="wall-rack-segment seg-middle" id="rackid-8" data-rackid="8"></div>
+                <div class="wall-rack-segment seg-right" id="rackid-9" data-rackid="9"></div>
+
+            </div>
+            <div class="wall-rack" id="wallrack-2">
+                <div class="wall-rack-segment seg-left" id="rackid-10" data-rackid="10"></div>
+                <div class="wall-rack-segment seg-middle" id="rackid-11" data-rackid="11"></div>
+                <div class="wall-rack-segment seg-right" id="rackid-12" data-rackid="12"></div>
+            </div>
+            <div class="wall-rack" id="wallrack-3">
+                <div class="wall-rack-segment seg-left" id="rackid-13" data-rackid="13"></div>
+                <div class="wall-rack-segment seg-middle" id="rackid-13" data-rackid="13"></div>
+                <div class="wall-rack-segment seg-right" id="rackid-13" data-rackid="13"></div>
+            </div>
+            <div class="wall-rack" id="wallrack-4">
+                <div class="wall-rack-segment seg-left" id="rackid-14" data-rackid="14"></div>
+                <div class="wall-rack-segment seg-middle" id="rackid-15" data-rackid="15"></div>
+                <div class="wall-rack-segment seg-right" id="rackid-16" data-rackid="16"></div>
+            </div>
+
+
+
+        </div>
+    </div>
+    <script src="script/dist/app.js"></script>
+</body>
+</html>

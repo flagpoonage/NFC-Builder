@@ -1,0 +1,79 @@
+﻿@import '_reset';
+
+body {
+margin: 0;
+padding: 0;
+height: 100%;
+width: 100%;
+}
+
+div#workspace {
+padding: 0;
+margin: 0;
+width: 100%;
+height: 100%;
+overflow: hidden;
+position:relative;
+}
+
+svg#drawing {
+padding: 0;
+margin: 0;
+position: absolute;
+top: 0;
+left: 0;
+}
+
+div.workspace-controls {
+background-color: #EEE;
+border: solid 1px #CCC;
+top: -1px;
+right: 50px;
+position: fixed;
+padding: 10px;
+border-bottom-left-radius: 4px;
+border-bottom-right-radius: 5px;
+z-index: 20;
+
+a.workspace-control {
+background-color: White;
+color: #2288FF;
+padding: 0 15px;
+height: 30px;
+cursor: pointer;
+display: inline-block;
+line-height: 30px;
+text-align: center;
+font-family: Arial, Helvetica, sans-serif;
+font-size: 11px;
+text-transform: uppercase;
+}
+
+a.workspace-control.selected {
+background-color: #2288FF;
+color: White;
+}
+}
+
+div.map-control{
+    background-color: #EEE;
+    border: solid 1px #CCC;
+    bottom: 20px;
+    right: 50px;
+    position: fixed;
+    padding: 10px;
+    border-radius: 4px;
+    padding: 20px;
+    width: 180px;
+}
+div.map-container{
+    background-color: White;
+}
+
+div.viewport-outline{
+    border: solid 1px #2288ff;
+}
+
+rect.workspace-anchor:hover{
+    fill: #2288ff;
+}
