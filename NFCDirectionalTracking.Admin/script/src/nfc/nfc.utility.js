@@ -35,5 +35,8 @@
         return Utility;
     })();
     NFC.Utility = Utility;
+
+    Utility.prototype.NavMode = 'navigate';
+    Utility.prototype.WallMode = 'walls';
 })(NFC || (NFC = {}));
 //# sourceMappingURL=nfc.utility.js.map

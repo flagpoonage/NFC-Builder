@@ -1,8 +1,8 @@
 ﻿/// <reference path="nfc/nfc.utility.ts" />
 /// <reference path="nfc/nfc.workspace.ts" />
-/// <reference path="nfc/nfc.workspace-map.ts" />
-/// <reference path="nfc/nfc.controls.ts" />
-/// <reference path="nfc/nfc.anchor.ts" />
+/// <reference path="nfc/nfc.map.ts" />
+/// <reference path="nfc/nfc.controls.container.ts" />
+/// <reference path="nfc/nfc.controls.modes.ts" />
 
 (() => {
     window['workspace'] = new NFC.Workspace('drawing');
@@ -12,7 +12,7 @@
         workspace: window['workspace']
     });
 
-    window['workspaceControls'] = new NFC.Controls({
+    window['workspaceControls'] = new NFC.Controls.Container({
         container: document.getElementById('workspace'),
         workspace: window['workspace']
     });

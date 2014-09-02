@@ -1,5 +1,5 @@
 ﻿/// <reference path="nfc.utility.ts" />
-/// <reference path="nfc.anchor.ts" />
+/// <reference path="nfc.grid.ts" />
 /// <reference path="nfc.wall.ts" />
 
 interface IMovement {
@@ -16,16 +16,20 @@ interface IMovement {
 module NFC {
     export class Workspace {
         _el: SVGSVGElement;
-        _anchorContainer: NFC.AnchorBlock;
+        _grid: NFC.Grid;
         _wallContainer: NFC.WallContainer;
+        _defsArea: SVGDefsElement;
         _ns: string;
         _mode: string;
         width: number;
         height: number;
         movement: IMovement;
+        eventListeners: NFCEventListeners;
         evHandlers: any;
         map: NFC.WorkspaceMap;
-        controls: NFC.Controls;
+        controls: NFC.Controls.Container;
+        controlParts: NFCControls;
+        modes: any;
         constructor(id: string) {
             this._ns = NFC.Utility.GetSVGNS();
             var el = <any>document.getElementById(id);
@@ -37,7 +41,9 @@ module NFC {
                 throw '"' + id + '" is not an SVG element.';
             }
 
-            this._mode = 'navigate';
+            this.createModes();
+
+            this._mode = this.modes.navigation;
 
             this.movement = {
                 moving: false,
@@ -55,6 +61,13 @@ module NFC {
             this._bindResize();
 
             this._bindEventListeners();
+        }
+
+        createModes() {
+            this.modes = {
+                navigation: 'navigate',
+                walls: 'walls'
+            };
         }
 
         _bindEventListeners() {
@@ -77,6 +90,8 @@ module NFC {
         }
 
         _initializeWorkspace(): void {
+            this._defsArea = <SVGDefsElement>document.createElementNS(NFC.Utility.GetSVGNS(), 'defs');
+
             this.width = parseInt(this._el.getAttribute('width'));
             this.height = parseInt(this._el.getAttribute('height'));
 
@@ -86,15 +101,17 @@ module NFC {
                 workspace: this
             });
 
-            this._anchorContainer = new NFC.AnchorBlock({
-                height: this.height,
-                width: this.width,
-                parent: this._el,
-                verticalGeneration: false,
-                anchorSize: 5,
+            this._grid = new NFC.Grid({
+                workspace: this,
+                colours: {
+                    standard: '#FFF',
+                    alternate: '#F2F2F2'
+                },
+                size: 10
             });
 
-            this._el.appendChild(this._anchorContainer.el);
+            this._el.appendChild(this._defsArea);
+
             this._el.appendChild(this._wallContainer.el);
         }
 
@@ -119,144 +136,65 @@ module NFC {
             setTimeout(fn, 50);
         }
 
-        _addControls(controls: NFC.Controls) {
+        _addControls(controls: NFC.Controls.Container) {
             this.controls = controls;
 
-            var self = this;
+            this.controlParts = this.controls.controlParts;
 
-            var fn = function () {
-                if (self.map.container.clientHeight > 0) {
-                    self.controls.generateControls();
-                    self.controls.initializeMode(self._mode);
-                }
-                else {
-                    setTimeout(fn, 50);
-                }
-            }
+            this.controls.initialize();
+        }
 
-            setTimeout(fn, 50);
+        _initializeMode() {
+            this._mode = this.modes.navigation;
 
+            this.controlParts.modes.initializeMode(this._mode);
         }
 
         changeMode(mode: string) {
-            switch (this._mode) {
-                case 'navigate':
-                    this.exitNavigationMode();
-                    break;
-                case 'walls':
-                    this.exitWallsMode();
-                    break;
-            }
+            this.controlParts.modes.unsetListenMode(this._mode);
 
             this._mode = mode;
 
+            this.controlParts.modes.setListenMode(this._mode);
+
             switch (this._mode) {
-                case 'navigate':
+                case this.modes.navigation:
                     this.enterNavigationMode();
                     break;
-                case 'walls':
+                case this.modes.walls:
                     this.enterWallsMode();
                     break;
             }
         }
 
-        exitNavigationMode() {
-            this._el.style.cursor = '';
-            this._anchorContainer.el.style.display = '';
-            this._el.removeEventListener('mousedown', this.evHandlers.navigationMode.mousedown);
-            window.removeEventListener('mouseup', this.evHandlers.navigationMode.mouseup);
-            this._el.removeEventListener('mousemove', this.evHandlers.navigationMode.mousemove);
-        }
-
         enterNavigationMode() {
-            this._anchorContainer.el.style.display = 'none';
             this._el.style.cursor = 'pointer';
-            this._el.addEventListener('mousedown', this.evHandlers.navigationMode.mousedown);
-            window.addEventListener('mouseup', this.evHandlers.navigationMode.mouseup);
-            this._el.addEventListener('mousemove', this.evHandlers.navigationMode.mousemove);
-        }
-
-        exitWallsMode() {
-            this._el.style.cursor = '';
-            this._el.removeEventListener('click', this.evHandlers.wallsMode.click);
-            this._el.removeEventListener('mousemove', this.evHandlers.wallsMode.mousemove);
         }
 
         enterWallsMode() {
             this._el.style.cursor = 'crosshair';
-            this._el.addEventListener('click', this.evHandlers.wallsMode.click);
-            this._el.addEventListener('mousemove', this.evHandlers.wallsMode.mousemove);
         }
     }
 
     NFC.Workspace.prototype.evHandlers = <any>{
         navigationMode: {
-            mousedown: function (ctx) {
-                return function (ev) {
-                    ctx.movement.moving = true;
-                    ctx.movement.moveStartX = ev.clientX;
-                    ctx.movement.moveStartY = ev.clientY;
-                }
-            },
-            mouseup: function (ctx) {
-                return function (ev) {
-                    ctx.movement.moving = false;
-                }
-            },
-            mousemove: function (ctx) {
-                return function (ev) {
-                    if (ctx.movement.moving) {
-                        var w = window.innerWidth;
-                        var h = window.innerHeight;
-
-                        var difX = ctx.movement.moveStartX - ev.clientX;
-                        var difY = ctx.movement.moveStartY - ev.clientY;
-
-                        ctx.movement.currentX = ctx.movement.currentX - difX;
-                        ctx.movement.currentY = ctx.movement.currentY - difY;
-
-                        if (ctx.movement.currentX > 0) {
-                            ctx.movement.currentX = 0;
-                        }
-                        else if (-ctx.movement.currentX > ctx.width - w) {
-                            ctx.movement.currentX = -(ctx.width - w);
-                            ctx._el.style.left = (-(ctx.width - w)).toString();
-                        }
-
-                        if (ctx.movement.currentY > 0) {
-                            ctx.movement.currentY = 0;
-                        }
-                        else if (-ctx.movement.currentY > ctx.height - h) {
-                            ctx.movement.currentY = -(ctx.height - h);
-                            ctx._el.style.top = (-(ctx.height - h)).toString();
-                        }
-
-                        ctx._el.style.top = ctx.movement.currentY + 'px';
-                        ctx._el.style.left = ctx.movement.currentX + 'px';
-
-                        ctx.movement.moveStartX = ev.clientX;
-                        ctx.movement.moveStartY = ev.clientY;
-
-                        if (ctx.map) {
-                            ctx.map.setPosition();
-                        }
-                    }
-                }
-            }
         },
         wallsMode:
         {
             click: function (ctx: NFC.Workspace) {
                 return function (ev) {
-                    var d = document.elementFromPoint(ev.clientX, ev.clientY);
-                    ev.target = d;
-                    var t = <SVGRectElement>ev.target;
-                    ctx._wallContainer.anchorSelect(t);
+                    var x = -ctx.movement.currentX + ev.clientX;
+                    var y = -ctx.movement.currentY + ev.clientY;
+                    var sq = ctx._grid.getSquarePoints(x, y);
+                    ctx._wallContainer.selectSquare(sq);
                 }
             },
             mousemove: function (ctx: NFC.Workspace) {
                 return function (ev) {
-                    ctx._wallContainer.updatePosition(ev.clientX, ev.clientY);
+                    var x = -ctx.movement.currentX + ev.clientX;
+                    var y = -ctx.movement.currentY + ev.clientY;
+                    var sq = ctx._grid.getSquarePoints(x, y);
+                    ctx._wallContainer.updatePosition(sq);
                 }
             }
         }

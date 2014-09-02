@@ -1,5 +1,7 @@
 ﻿module NFC {
     export class Utility {
+        NavMode: string;
+        WallMode: string;
         constructor() {
         }
 
@@ -33,4 +35,7 @@
             el.setAttribute('class', classes.join(' '));
         }
     }
+
+    Utility.prototype.NavMode = 'navigate';
+    Utility.prototype.WallMode = 'walls';
 } 

@@ -40,11 +40,15 @@
   </ItemGroup>
   <ItemGroup>
     <TypeScriptCompile Include="script\src\app.ts" />
-    <TypeScriptCompile Include="script\src\nfc\nfc.anchor.ts" />
-    <TypeScriptCompile Include="script\src\nfc\nfc.controls.ts" />
+    <TypeScriptCompile Include="script\src\nfc\nfc.controls.build.ts" />
+    <TypeScriptCompile Include="script\src\nfc\nfc.controls.container.ts" />
+    <TypeScriptCompile Include="script\src\nfc\nfc.controls.modes.ts" />
+    <TypeScriptCompile Include="script\src\nfc\nfc.controls.navigate.ts" />
+    <TypeScriptCompile Include="script\src\nfc\nfc.controls.select.ts" />
+    <TypeScriptCompile Include="script\src\nfc\nfc.grid.ts" />
     <TypeScriptCompile Include="script\src\nfc\nfc.utility.ts" />
     <TypeScriptCompile Include="script\src\nfc\nfc.wall.ts" />
-    <TypeScriptCompile Include="script\src\nfc\nfc.workspace-map.ts" />
+    <TypeScriptCompile Include="script\src\nfc\nfc.map.ts" />
     <TypeScriptCompile Include="script\src\nfc\nfc.workspace.ts" />
   </ItemGroup>
   <ItemGroup>

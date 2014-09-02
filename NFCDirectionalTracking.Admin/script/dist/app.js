@@ -35,167 +35,130 @@
         return Utility;
     })();
     NFC.Utility = Utility;
+
+    Utility.prototype.NavMode = 'navigate';
+    Utility.prototype.WallMode = 'walls';
 })(NFC || (NFC = {}));
 var NFC;
 (function (NFC) {
-    var Anchor = (function () {
-        function Anchor(options) {
-            this.edge = options.edge;
-            this.x = options.index[0];
-            this.y = options.index[1];
-            this.parent = options.parent;
-            this.visible = options.visible || true;
-            this.stroke = options.stroke;
+    var Grid = (function () {
+        function Grid(options) {
             this.size = options.size;
-            this.fill = options.fill;
-            this.vgen = options.verticalGen;
-            this.space = options.space;
+            this.workspace = options.workspace;
+            this.colours = options.colours || {
+                standard: '#FFF',
+                alternate: '#EEE'
+            };
 
-            this._generateSvgTag();
+            this.generateGrid();
         }
-        Anchor.prototype._generateSvgTag = function () {
-            var svgNS = NFC.Utility.GetSVGNS();
-            var anchor = document.createElementNS(svgNS, "rect");
+        Grid.prototype.generateGrid = function () {
+            this.generatePattern();
+            var xW = Math.ceil(this.workspace.width / this.size);
+            var yH = Math.ceil(this.workspace.height / this.size);
 
-            if (!this.vgen) {
-                this.index = this.x + (this.y + 1);
-            } else {
-                this.index = this.y + (this.x + 1);
+            if (xW * this.size > this.workspace.width) {
+                this.workspace.width = xW * this.size;
+                this.workspace._el.setAttribute('width', (xW * this.size).toString());
             }
 
-            this.id = this.x + '_' + this.y + '_workspace_anchor';
-
-            var t = this.space + this.edge;
-
-            var stroke = 2;
-
-            var radius = this.size / (stroke * 2);
-
-            anchor.setAttributeNS(null, 'id', this.id);
-            anchor.setAttributeNS(null, "x", (this.x * t).toString());
-            anchor.setAttributeNS(null, "y", (this.y * t).toString());
-            anchor.setAttributeNS(null, "width", (this.space + this.size).toString());
-            anchor.setAttributeNS(null, "height", (this.space + this.size).toString());
-            anchor.setAttributeNS(null, 'fill', 'White');
-            anchor.setAttributeNS(null, 'stroke', this.stroke);
-            anchor.setAttributeNS(null, 'stroke-width', '0.5');
-
-            NFC.Utility.AddClass(anchor, 'workspace-anchor');
-
-            this.el = anchor;
-        };
-        return Anchor;
-    })();
-    NFC.Anchor = Anchor;
-
-    var AnchorBlock = (function () {
-        function AnchorBlock(options) {
-            this.parent = options.parent;
-            this.width = options.width;
-            this.height = options.height;
-            this.verticalGeneration = options.verticalGeneration;
-            this.anchorSize = options.anchorSize;
-            if (this.verticalGeneration) {
-                this._generateVertical();
-            } else {
-                this._generateHorizontal();
+            if (yH * this.size > this.workspace.height) {
+                this.workspace.height = yH * this.size;
+                this.workspace._el.setAttribute('height', (yH * this.size).toString());
             }
-        }
-        AnchorBlock.prototype._selfGenerate = function () {
-            var ns = NFC.Utility.GetSVGNS();
 
-            var el = document.createElementNS(ns, 'g');
+            this.display = document.createElementNS(NFC.Utility.GetSVGNS(), 'rect');
 
-            el.setAttributeNS(null, 'x', '0');
-            el.setAttributeNS(null, 'y', '0');
+            this.display.setAttribute('id', 'grid-display');
+            this.display.setAttribute('width', this.workspace.width.toString());
+            this.display.setAttribute('height', this.workspace.height.toString());
+            this.display.setAttributeNS(null, 'x', '0');
+            this.display.setAttributeNS(null, 'y', '0');
+            this.display.setAttributeNS(null, 'fill', 'url(#' + this.pattern.id + ')');
 
-            el.setAttributeNS(null, 'width', this.width.toString());
-            el.setAttributeNS(null, 'height', this.height.toString());
-
-            this.el = el;
-
-            this._anchors = [];
+            this.workspace._el.appendChild(this.display);
         };
 
-        AnchorBlock.prototype._generateHorizontal = function () {
-            var spaceSize = this.anchorSize * 2;
+        Grid.prototype.generatePattern = function () {
+            var szStr = this.size.toString();
 
-            var edgeSize = this.anchorSize;
+            this.pattern = document.createElementNS(NFC.Utility.GetSVGNS(), 'pattern');
 
-            var total = spaceSize + this.anchorSize;
-            var xCount = Math.ceil(this.width / total);
-            var yCount = Math.ceil(this.height / total);
+            this.pattern.setAttribute('id', 'grid-pattern');
+            this.pattern.setAttributeNS(null, 'patternUnits', 'userSpaceOnUse');
 
-            this.width = xCount * total;
-            this.height = yCount * total;
+            this.pattern.setAttributeNS(null, 'x', '0');
+            this.pattern.setAttributeNS(null, 'y', '0');
+            this.pattern.setAttributeNS(null, 'width', (this.size * 2).toString());
+            this.pattern.setAttributeNS(null, 'height', (this.size * 2).toString());
 
-            this._selfGenerate();
+            var rectStandard1 = document.createElementNS(NFC.Utility.GetSVGNS(), 'rect');
+            var rectStandard2 = document.createElementNS(NFC.Utility.GetSVGNS(), 'rect');
+            var rectAlternate1 = document.createElementNS(NFC.Utility.GetSVGNS(), 'rect');
+            var rectAlternate2 = document.createElementNS(NFC.Utility.GetSVGNS(), 'rect');
 
-            for (var y = 0; y < yCount; y++) {
-                for (var x = 0; x < xCount; x++) {
-                    var anc = new NFC.Anchor({
-                        fill: '#FFF',
-                        stroke: '#EEE',
-                        index: [x, y],
-                        size: this.anchorSize,
-                        visible: true,
-                        parent: this.el,
-                        verticalGen: this.verticalGeneration,
-                        edge: edgeSize,
-                        space: spaceSize
-                    });
+            rectStandard1.setAttributeNS(null, 'x', '0');
+            rectStandard1.setAttributeNS(null, 'y', '0');
+            rectStandard1.setAttributeNS(null, 'width', szStr);
+            rectStandard1.setAttributeNS(null, 'height', szStr);
+            rectStandard1.setAttributeNS(null, 'fill', this.colours.standard);
 
-                    this.el.appendChild(anc.el);
+            rectAlternate1.setAttributeNS(null, 'x', szStr);
+            rectAlternate1.setAttributeNS(null, 'y', '0');
+            rectAlternate1.setAttributeNS(null, 'width', szStr);
+            rectAlternate1.setAttributeNS(null, 'height', szStr);
+            rectAlternate1.setAttributeNS(null, 'fill', this.colours.alternate);
 
-                    this._anchors.push(anc);
+            rectStandard2.setAttributeNS(null, 'x', szStr);
+            rectStandard2.setAttributeNS(null, 'y', szStr);
+            rectStandard2.setAttributeNS(null, 'width', szStr);
+            rectStandard2.setAttributeNS(null, 'height', szStr);
+            rectStandard2.setAttributeNS(null, 'fill', this.colours.standard);
+
+            rectAlternate2.setAttributeNS(null, 'x', '0');
+            rectAlternate2.setAttributeNS(null, 'y', szStr);
+            rectAlternate2.setAttributeNS(null, 'width', szStr);
+            rectAlternate2.setAttributeNS(null, 'height', szStr);
+            rectAlternate2.setAttributeNS(null, 'fill', this.colours.alternate);
+
+            this.pattern.appendChild(rectStandard1);
+            this.pattern.appendChild(rectAlternate1);
+            this.pattern.appendChild(rectStandard2);
+            this.pattern.appendChild(rectAlternate2);
+
+            this.workspace._defsArea.appendChild(this.pattern);
+        };
+
+        Grid.prototype.getSquarePoints = function (x, y) {
+            var xCoord = Math.floor(x / this.size);
+            var yCoord = Math.floor(y / this.size);
+
+            return {
+                square: {
+                    x: xCoord,
+                    y: yCoord
+                },
+                topLeft: {
+                    x: xCoord * this.size,
+                    y: yCoord * this.size
+                },
+                bottomLeft: {
+                    x: xCoord * this.size,
+                    y: (yCoord * this.size) + this.size
+                },
+                topRight: {
+                    x: (xCoord * this.size) + this.size,
+                    y: yCoord * this.size
+                },
+                bottomRight: {
+                    x: (xCoord * this.size) + this.size,
+                    y: (yCoord * this.size) + this.size
                 }
-            }
+            };
         };
-
-        AnchorBlock.prototype._generateVertical = function () {
-            var spaceSize = this.anchorSize * 2;
-
-            var edgeSize = this.anchorSize;
-
-            var total = spaceSize + this.anchorSize;
-            var xCount = Math.ceil(this.width / total);
-            var yCount = Math.ceil(this.height / total);
-
-            this.width = xCount * total;
-            this.height = yCount * total;
-
-            this._selfGenerate();
-
-            for (var x = 0; x < xCount; x++) {
-                for (var y = 0; y < yCount; y++) {
-                    var anc = new NFC.Anchor({
-                        fill: '#FFF',
-                        stroke: '#CCC',
-                        index: [x, y],
-                        size: this.anchorSize,
-                        visible: true,
-                        parent: this.el,
-                        verticalGen: this.verticalGeneration,
-                        edge: edgeSize,
-                        space: spaceSize
-                    });
-
-                    this.el.appendChild(anc.el);
-
-                    this._anchors.push(anc);
-                }
-            }
-        };
-        return AnchorBlock;
+        return Grid;
     })();
-    NFC.AnchorBlock = AnchorBlock;
-
-    var SVGAnchorCollection = (function () {
-        function SVGAnchorCollection() {
-        }
-        return SVGAnchorCollection;
-    })();
-    NFC.SVGAnchorCollection = SVGAnchorCollection;
+    NFC.Grid = Grid;
 })(NFC || (NFC = {}));
 var NFC;
 (function (NFC) {
@@ -203,43 +166,79 @@ var NFC;
         function Wall(options) {
             var w2 = options.width / 2;
 
-            options.x = w2 + options.x;
-            options.y = w2 + options.y;
-
-            this.segments = [{ x: options.x, y: options.y }];
+            this.segments = [options.square];
             this.width = options.width;
 
-            this._currentSegment = { x: options.x, y: options.y };
-
-            this._pathCommand = 'M' + this.segments[0].x + ' ' + this.segments[0].y + ' ';
+            this._currentSegment = {
+                square: options.square.square,
+                bottomLeft: options.square.bottomLeft,
+                bottomRight: options.square.bottomRight,
+                topLeft: options.square.topLeft,
+                topRight: options.square.topRight
+            };
 
             this.generateSelf();
+
+            this.generatePath(this.segments[0], this.segments[0]);
         }
         Wall.prototype.generateSelf = function () {
             this.el = document.createElementNS(NFC.Utility.GetSVGNS(), 'path');
 
             this.el.setAttributeNS(null, 'stroke', 'black');
-            this.el.setAttributeNS(null, 'stroke-width', this.width.toString());
+            this.el.setAttributeNS(null, 'stroke-width', '1');
+            this.el.setAttributeNS(null, 'fill', '#AAA');
+        };
+
+        Wall.prototype.updateSegment = function (sq) {
+            var cSeg = this.segments[this.segments.length - 1];
+            if ((sq.square.x !== cSeg.square.x || sq.square.y !== cSeg.square.y) && (sq.square.x !== this._currentSegment.square.x || sq.square.y !== this._currentSegment.square.y)) {
+                if (this.segments.length === 1) {
+                    this.generatePath(this.segments[0], sq);
+                }
+            }
+        };
+
+        Wall.prototype._lt = function (c) {
+            return 'L ' + c.x + ' ' + c.y + ' ';
+        };
+
+        Wall.prototype._mt = function (c) {
+            return 'M' + c.x + ' ' + c.y + ' ';
+        };
+
+        Wall.prototype.generatePath = function (start, next) {
+            if (next.square.x > start.square.x) {
+                if (next.square.y > start.square.y) {
+                    this._pathCommand = this._mt(start.topLeft) + this._lt(start.topRight) + this._lt(next.topRight) + this._lt(next.bottomRight) + this._lt(next.bottomLeft) + this._lt(start.bottomLeft) + this._lt(start.topLeft);
+                } else if (next.square.y < start.square.y) {
+                    this._pathCommand = this._mt(start.topLeft) + this._lt(next.topLeft) + this._lt(next.topRight) + this._lt(next.bottomRight) + this._lt(start.bottomRight) + this._lt(start.bottomLeft) + this._lt(start.topLeft);
+                } else {
+                    this._pathCommand = this._mt(start.topLeft) + this._lt(next.topRight) + this._lt(next.bottomRight) + this._lt(start.bottomLeft) + this._lt(start.topLeft);
+                }
+            } else if (next.square.x < start.square.x) {
+                if (next.square.y > start.square.y) {
+                    this._pathCommand = this._mt(start.topLeft) + this._lt(start.topRight) + this._lt(start.bottomRight) + this._lt(next.bottomRight) + this._lt(next.bottomLeft) + this._lt(next.topLeft) + this._lt(start.topLeft);
+                } else if (next.square.y < start.square.y) {
+                    this._pathCommand = this._mt(start.topRight) + this._lt(start.bottomRight) + this._lt(start.bottomLeft) + this._lt(next.bottomLeft) + this._lt(next.topLeft) + this._lt(next.topRight) + this._lt(start.topRight);
+                } else {
+                    this._pathCommand = this._mt(start.topRight) + this._lt(start.bottomRight) + this._lt(next.bottomLeft) + this._lt(next.topLeft) + this._lt(start.topRight);
+                }
+            } else {
+                if (next.square.y > start.square.y) {
+                    this._pathCommand = this._mt(start.topLeft) + this._lt(start.topRight) + this._lt(next.bottomRight) + this._lt(next.bottomLeft) + this._lt(start.topLeft);
+                } else if (next.square.y < start.square.y) {
+                    this._pathCommand = this._mt(start.bottomRight) + this._lt(start.bottomLeft) + this._lt(next.topLeft) + this._lt(next.topRight) + this._lt(start.bottomRight);
+                } else {
+                    this._pathCommand = this._mt(this.segments[0].topLeft) + this._lt(this.segments[0].topRight) + this._lt(this.segments[0].bottomRight) + this._lt(this.segments[0].bottomLeft) + this._lt(this.segments[0].topLeft);
+                }
+            }
+
             this.el.setAttributeNS(null, 'd', this._pathCommand);
         };
 
-        Wall.prototype.drawLine = function () {
-            var cmd = 'L ' + this._currentSegment.x + ' ' + this._currentSegment.y;
-            this.el.setAttributeNS(null, 'd', this._pathCommand + cmd);
-        };
-
-        Wall.prototype.updateSegment = function (x, y) {
-            this._currentSegment.x = x;
-            this._currentSegment.y = y;
-
-            this.drawLine();
-        };
-
-        Wall.prototype.completeSegment = function (x, y) {
-            this.segments.push({ x: x, y: y });
-            this._pathCommand += 'L ' + x + ' ' + y + ' ';
-            this._currentSegment = { x: x, y: y };
-            this.drawLine();
+        Wall.prototype.completeSegment = function (sq) {
+            this.segments.push(sq);
+            this.generatePath(this.segments[0], this.segments[1]);
         };
         return Wall;
     })();
@@ -269,27 +268,45 @@ var NFC;
             this._walls = [];
         };
 
-        WallContainer.prototype.anchorSelect = function (rect) {
+        WallContainer.prototype.selectSquare = function (sq) {
+            var sz = sq.topRight.x - sq.topLeft.x;
+            var mid = sz / 2;
             if (!this._inPath) {
                 this._currentPath = new NFC.Wall({
-                    x: parseInt(rect.getAttributeNS(null, 'x')),
-                    y: parseInt(rect.getAttributeNS(null, 'y')),
-                    width: parseInt(rect.getAttributeNS(null, 'width'))
+                    square: sq,
+                    width: sz
                 });
-
-                this._walls.push(this._currentPath);
 
                 this.el.appendChild(this._currentPath.el);
 
                 this._inPath = true;
             } else {
-                this._currentPath.completeSegment(parseInt(rect.getAttributeNS(null, 'x')), parseInt(rect.getAttributeNS(null, 'y')));
+                this._currentPath.completeSegment(sq);
+
+                this._walls.push(this._currentPath);
+
+                this._currentPath = new NFC.Wall({
+                    square: sq,
+                    width: sz
+                });
+
+                this._walls.push(this._currentPath);
+
+                this.el.appendChild(this._currentPath.el);
             }
         };
 
-        WallContainer.prototype.updatePosition = function (x, y) {
+        WallContainer.prototype.updatePosition = function (sq) {
             if (this._inPath) {
-                this._currentPath.updateSegment(x, y);
+                this._currentPath.updateSegment(sq);
+            }
+        };
+
+        WallContainer.prototype.stopPathing = function () {
+            if (this._inPath) {
+                this.el.removeChild(this._currentPath.el);
+                this._currentPath = null;
+                this._inPath = false;
             }
         };
         return WallContainer;
@@ -310,7 +327,9 @@ var NFC;
                 throw '"' + id + '" is not an SVG element.';
             }
 
-            this._mode = 'navigate';
+            this.createModes();
+
+            this._mode = this.modes.navigation;
 
             this.movement = {
                 moving: false,
@@ -329,6 +348,13 @@ var NFC;
 
             this._bindEventListeners();
         }
+        Workspace.prototype.createModes = function () {
+            this.modes = {
+                navigation: 'navigate',
+                walls: 'walls'
+            };
+        };
+
         Workspace.prototype._bindEventListeners = function () {
             this.evHandlers.navigationMode.mousedown = this.evHandlers.navigationMode.mousedown(this);
             this.evHandlers.navigationMode.mouseup = this.evHandlers.navigationMode.mouseup(this);
@@ -349,6 +375,8 @@ var NFC;
         };
 
         Workspace.prototype._initializeWorkspace = function () {
+            this._defsArea = document.createElementNS(NFC.Utility.GetSVGNS(), 'defs');
+
             this.width = parseInt(this._el.getAttribute('width'));
             this.height = parseInt(this._el.getAttribute('height'));
 
@@ -358,15 +386,17 @@ var NFC;
                 workspace: this
             });
 
-            this._anchorContainer = new NFC.AnchorBlock({
-                height: this.height,
-                width: this.width,
-                parent: this._el,
-                verticalGeneration: false,
-                anchorSize: 5
+            this._grid = new NFC.Grid({
+                workspace: this,
+                colours: {
+                    standard: '#FFF',
+                    alternate: '#F2F2F2'
+                },
+                size: 10
             });
 
-            this._el.appendChild(this._anchorContainer.el);
+            this._el.appendChild(this._defsArea);
+
             this._el.appendChild(this._wallContainer.el);
         };
 
@@ -390,26 +420,23 @@ var NFC;
         Workspace.prototype._addControls = function (controls) {
             this.controls = controls;
 
-            var self = this;
+            this.controlParts = this.controls.controlParts;
 
-            var fn = function () {
-                if (self.map.container.clientHeight > 0) {
-                    self.controls.generateControls();
-                    self.controls.initializeMode(self._mode);
-                } else {
-                    setTimeout(fn, 50);
-                }
-            };
+            this.controls.initialize();
+        };
 
-            setTimeout(fn, 50);
+        Workspace.prototype._initializeMode = function () {
+            this._mode = this.modes.navigation;
+
+            this.controlParts.modes.initializeMode(this._mode);
         };
 
         Workspace.prototype.changeMode = function (mode) {
             switch (this._mode) {
-                case 'navigate':
+                case this.modes.navigation:
                     this.exitNavigationMode();
                     break;
-                case 'walls':
+                case this.modes.walls:
                     this.exitWallsMode();
                     break;
             }
@@ -417,10 +444,10 @@ var NFC;
             this._mode = mode;
 
             switch (this._mode) {
-                case 'navigate':
+                case this.modes.navigation:
                     this.enterNavigationMode();
                     break;
-                case 'walls':
+                case this.modes.walls:
                     this.enterWallsMode();
                     break;
             }
@@ -428,14 +455,12 @@ var NFC;
 
         Workspace.prototype.exitNavigationMode = function () {
             this._el.style.cursor = '';
-            this._anchorContainer.el.style.display = '';
             this._el.removeEventListener('mousedown', this.evHandlers.navigationMode.mousedown);
             window.removeEventListener('mouseup', this.evHandlers.navigationMode.mouseup);
             this._el.removeEventListener('mousemove', this.evHandlers.navigationMode.mousemove);
         };
 
         Workspace.prototype.enterNavigationMode = function () {
-            this._anchorContainer.el.style.display = 'none';
             this._el.style.cursor = 'pointer';
             this._el.addEventListener('mousedown', this.evHandlers.navigationMode.mousedown);
             window.addEventListener('mouseup', this.evHandlers.navigationMode.mouseup);
@@ -513,15 +538,18 @@ var NFC;
         wallsMode: {
             click: function (ctx) {
                 return function (ev) {
-                    var d = document.elementFromPoint(ev.clientX, ev.clientY);
-                    ev.target = d;
-                    var t = ev.target;
-                    ctx._wallContainer.anchorSelect(t);
+                    var x = -ctx.movement.currentX + ev.clientX;
+                    var y = -ctx.movement.currentY + ev.clientY;
+                    var sq = ctx._grid.getSquarePoints(x, y);
+                    ctx._wallContainer.selectSquare(sq);
                 };
             },
             mousemove: function (ctx) {
                 return function (ev) {
-                    ctx._wallContainer.updatePosition(ev.clientX, ev.clientY);
+                    var x = -ctx.movement.currentX + ev.clientX;
+                    var y = -ctx.movement.currentY + ev.clientY;
+                    var sq = ctx._grid.getSquarePoints(x, y);
+                    ctx._wallContainer.updatePosition(sq);
                 };
             }
         }
@@ -607,62 +635,172 @@ var NFC;
 })(NFC || (NFC = {}));
 var NFC;
 (function (NFC) {
-    var Controls = (function () {
-        function Controls(options) {
-            this.container = options.container;
-            this.workspace = options.workspace;
+    (function (Controls) {
+        var Modes = (function () {
+            function Modes(options) {
+                this.createModes();
+                this.workspace = options.workspace;
+                this.container = options.container;
 
-            this.workspace._addControls(this);
-        }
-        Controls.prototype.generateControls = function () {
-            this.el = document.createElement('div');
-            this.el.setAttribute('class', 'workspace-controls');
+                this.generateControls();
+            }
+            Modes.prototype.createModes = function () {
+                this.modes = {
+                    navigation: 'navigate',
+                    walls: 'walls'
+                };
+            };
 
-            this.navigate = document.createElement('a');
-            this.navigate.setAttribute('class', 'workspace-control');
-            this.navigate.innerHTML = 'Navigate';
+            Modes.prototype.generateControls = function () {
+                this.el = document.createElement('div');
+                this.el.setAttribute('class', 'workspace-controls');
 
-            var self = this;
-            this.navigate.addEventListener('click', function (ev) {
-                var m = 'navigate';
-                if (self.mode !== m) {
-                    self.changeMode(m);
-                    self.workspace.changeMode(self.mode);
+                this.navigate = document.createElement('a');
+                this.navigate.setAttribute('class', 'workspace-control');
+                this.navigate.innerHTML = 'Navigate';
+
+                var self = this;
+                this.navigate.addEventListener('click', function (ev) {
+                    if (self.mode !== self.modes.navigation) {
+                        self.changeMode(self.modes.navigation);
+                        self.workspace.changeMode(self.mode);
+                    }
+                });
+
+                this.walls = document.createElement('a');
+                this.walls.setAttribute('class', 'workspace-control');
+                this.walls.innerHTML = 'Walls';
+
+                this.walls.addEventListener('click', function (ev) {
+                    if (self.mode !== self.modes.walls) {
+                        self.changeMode(self.modes.walls);
+                        self.workspace.changeMode(self.mode);
+                    }
+                });
+
+                this.el.appendChild(this.navigate);
+                this.el.appendChild(this.walls);
+
+                this.container.container.appendChild(this.el);
+            };
+
+            Modes.prototype.changeMode = function (mode) {
+                NFC.Utility.RemoveClass(this[this.mode], 'selected');
+                NFC.Utility.AddClass(this[mode], 'selected');
+                this.mode = mode;
+            };
+
+            Modes.prototype.initialize = function () {
+                this.generateControls();
+                this.workspace._initializeMode();
+            };
+
+            Modes.prototype.initializeMode = function (mode) {
+                this.mode = mode;
+                NFC.Utility.AddClass(this[mode], 'selected');
+                this.workspace.changeMode(mode);
+            };
+
+            Modes.prototype.escapeKey = function () {
+                if (this.mode === this.modes.walls) {
+                    this.workspace._wallContainer.stopPathing();
                 }
-            });
+            };
 
-            this.walls = document.createElement('a');
-            this.walls.setAttribute('class', 'workspace-control');
-            this.walls.innerHTML = 'Walls';
+            Modes.prototype.enterKey = function () {
+            };
 
-            this.walls.addEventListener('click', function (ev) {
-                var m = 'walls';
-                if (self.mode !== m) {
-                    self.changeMode(m);
-                    self.workspace.changeMode(self.mode);
+            Modes.prototype.nKey = function () {
+                var m = this.modes.navigation;
+                if (this.mode !== m) {
+                    this.changeMode(m);
+                    this.workspace.changeMode(this.mode);
                 }
-            });
+            };
 
-            this.el.appendChild(this.navigate);
-            this.el.appendChild(this.walls);
+            Modes.prototype.wKey = function () {
+                var m = this.modes.walls;
+                if (this.mode !== m) {
+                    this.changeMode(m);
+                    this.workspace.changeMode(this.mode);
+                }
+            };
+            return Modes;
+        })();
+        Controls.Modes = Modes;
+    })(NFC.Controls || (NFC.Controls = {}));
+    var Controls = NFC.Controls;
+})(NFC || (NFC = {}));
 
-            this.container.appendChild(this.el);
-        };
+var NFC;
+(function (NFC) {
+    (function (Controls) {
+        var Container = (function () {
+            function Container(options) {
+                this.container = options.container;
+                this.workspace = options.workspace;
 
-        Controls.prototype.changeMode = function (mode) {
-            NFC.Utility.RemoveClass(this[this.mode], 'selected');
-            NFC.Utility.AddClass(this[mode], 'selected');
-            this.mode = mode;
-        };
+                this.controlParts = {};
+                this.controlParts.modes = new NFC.Controls.Modes({
+                    container: this,
+                    workspace: this.workspace
+                });
 
-        Controls.prototype.initializeMode = function (mode) {
-            this.mode = mode;
-            NFC.Utility.AddClass(this[mode], 'selected');
-            this.workspace.changeMode(mode);
-        };
-        return Controls;
-    })();
-    NFC.Controls = Controls;
+                this.bindKeyCommands();
+
+                this.workspace._addControls(this);
+            }
+            Container.prototype.initialize = function () {
+                this.controlParts.modes.initialize();
+            };
+
+            Container.prototype.bindKeyCommands = function () {
+                var escapeKey = 27;
+                var enter = 13;
+                var nKey = 78;
+                var wKey = 87;
+
+                (function (ctx) {
+                    window.addEventListener("keydown", function (event) {
+                        switch (event.keyCode) {
+                            case escapeKey:
+                                ctx.escapeKey();
+                                break;
+                            case enter:
+                                ctx.enterKey();
+                                break;
+                            case nKey:
+                                ctx.nKey();
+                                break;
+                            case wKey:
+                                ctx.wKey();
+                                break;
+                            default:
+                                break;
+                        }
+                    });
+                })(this);
+            };
+
+            Container.prototype.escapeKey = function () {
+                this.controlParts.modes.escapeKey();
+            };
+
+            Container.prototype.enterKey = function () {
+            };
+
+            Container.prototype.nKey = function () {
+                this.controlParts.modes.nKey();
+            };
+
+            Container.prototype.wKey = function () {
+                this.controlParts.modes.wKey();
+            };
+            return Container;
+        })();
+        Controls.Container = Container;
+    })(NFC.Controls || (NFC.Controls = {}));
+    var Controls = NFC.Controls;
 })(NFC || (NFC = {}));
 (function () {
     window['workspace'] = new NFC.Workspace('drawing');
@@ -672,7 +810,7 @@ var NFC;
         workspace: window['workspace']
     });
 
-    window['workspaceControls'] = new NFC.Controls({
+    window['workspaceControls'] = new NFC.Controls.Container({
         container: document.getElementById('workspace'),
         workspace: window['workspace']
     });
